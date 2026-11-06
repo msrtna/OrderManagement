@@ -1,12 +1,15 @@
-﻿namespace OrderManagement.Domain.Entities
+﻿using OrderManagement.Domain.Common;
+
+namespace OrderManagement.Domain.Entities;
+
+public class CartItem : BaseEntity<long>
 {
-    public class CartItem
-    {
-        public int Id { get; set; }
-        public int ShoppingCartId { get; set; }
-        public int ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public int Quantity { get; set; }
-        public bool IsProductDeleted { get; set; }
-    }
+    public long ShoppingCartId { get; set; }
+    public int? ProductId { get; set; }
+    public string ProductName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public bool IsProductDeleted { get; set; }
+
+    public ShoppingCart ShoppingCart { get; set; } = null!;
+    public Product? Product { get; set; }
 }

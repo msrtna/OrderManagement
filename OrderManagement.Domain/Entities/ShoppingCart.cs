@@ -1,12 +1,11 @@
-﻿namespace OrderManagement.Domain.Entities
-{
-    public class ShoppingCart
-    {
-        public int Id { get; set; }
-        public int UserId { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+﻿using OrderManagement.Domain.Common;
 
-        public ICollection<CartItem> Items { get; set; } = new List<CartItem>();
-    }
+namespace OrderManagement.Domain.Entities;
+
+public class ShoppingCart : BaseEntity<long>
+{
+    public string UserId { get; set; } = string.Empty;
+
+    public ApplicationUser User { get; set; } = null!;
+    public ICollection<CartItem> Items { get; set; } = new List<CartItem>();
 }

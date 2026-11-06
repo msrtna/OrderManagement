@@ -2,9 +2,9 @@
 {
     public enum StockReservationStatus
     {
-        Active = 0,
-        Consumed = 1,
-        Released = 2,
-        Expired = 3
+        Active = 1,
+        Consumed = 2,
+        Released = 3,
+        Expired = 4
     }
 }

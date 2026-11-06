@@ -2,9 +2,9 @@
 {
     public enum PaymentAttemptStatus
     {
-        Pending = 0,
-        Succeeded = 1,
-        Failed = 2,
-        Unknown = 3
+        Pending = 1,
+        Succeeded = 2,
+        Failed = 3,
+        Unknown = 4
     }
 }

@@ -2,8 +2,8 @@
 {
     public enum OrderStatus
     {
-        PendingPayment = 0,
-        Paid = 1,
-        Cancelled = 2
+        PendingPayment = 1,
+        Paid = 2,
+        Cancelled = 3
     }
 }
