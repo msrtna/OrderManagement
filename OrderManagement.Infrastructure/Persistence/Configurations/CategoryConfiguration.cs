@@ -23,10 +23,13 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .IsRequired()
             .HasDefaultValue(true);
 
-        builder.HasMany(c => c.Products)
-            .WithOne(p => p.Category)
-            .HasForeignKey(p => p.CategoryId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(c => c.CreatedAt)
+            .IsRequired();
+
+
+
+
+        builder.HasIndex(c => c.Name)
+            .IsUnique();
     }
 }

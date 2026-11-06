@@ -35,11 +35,41 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.StockQuantity)
             .IsRequired();
 
+        builder.Property(p => p.CategoryId)
+            .IsRequired();
+
         builder.Property(p => p.IsActive)
             .IsRequired()
             .HasDefaultValue(true);
 
         builder.Property(p => p.CreatedAt)
             .IsRequired();
+
+
+
+        builder.HasOne(p => p.Category)
+            .WithMany(c => c.Products)
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(p => p.CartItems)
+            .WithOne(ci => ci.Product)
+            .HasForeignKey(ci => ci.ProductId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasMany(p => p.OrderItems)
+            .WithOne(oi => oi.Product)
+            .HasForeignKey(oi => oi.ProductId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasMany(p => p.StockReservations)
+            .WithOne(sr => sr.Product)
+            .HasForeignKey(sr => sr.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(p => p.StockAdjustmentRequests)
+            .WithOne(sar => sar.Product)
+            .HasForeignKey(sar => sar.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

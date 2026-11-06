@@ -8,7 +8,7 @@ public class CartItem : BaseEntity<long>
     public int? ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public int Quantity { get; set; }
-    public bool IsProductDeleted { get; set; }
+    public bool IsProductDeleted { get; set; } = false;
 
     public ShoppingCart ShoppingCart { get; set; } = null!;
     public Product? Product { get; set; }
