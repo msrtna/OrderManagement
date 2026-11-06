@@ -52,5 +52,18 @@ public class StoreSettingsConfiguration : IEntityTypeConfiguration<StoreSettings
 
         builder.Property(s => s.CreatedAt)
             .IsRequired();
+
+
+
+        builder.HasData(new
+        {
+            Id = 1,
+            ReservationDurationMinutes = 15,
+            OrderExpirationHours = 24,
+            DefaultShippingCost = 1000m,
+            MaxCartItemQuantity = 99,
+            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            UpdatedAt = (DateTime?)null
+        });
     }
 }

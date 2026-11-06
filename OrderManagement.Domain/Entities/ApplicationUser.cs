@@ -6,7 +6,7 @@ public class ApplicationUser : IdentityUser
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public bool IsBlocked { get; set; }
+    public bool IsBlocked { get; set; } = false;
     public bool CanPurchase { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

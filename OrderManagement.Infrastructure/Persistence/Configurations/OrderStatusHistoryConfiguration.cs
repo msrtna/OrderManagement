@@ -33,7 +33,6 @@ public class OrderStatusHistoryConfiguration
 
 
 
-        builder.HasIndex(h => h.OrderId);
         builder.HasIndex(h => new { h.OrderId, h.CreatedAt });
     }
 }
