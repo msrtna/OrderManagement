@@ -18,9 +18,7 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection")));
-
         services.AddDataProtection();
-
         services.AddIdentityCore<ApplicationUser>(options =>
             {
                 options.User.RequireUniqueEmail = true;
@@ -38,8 +36,8 @@ public static class DependencyInjection
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
-
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ITokenService, JwtTokenService>();
 
         return services;
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OrderManagement.Application.Features.Authentication.Login;
 using OrderManagement.Application.Features.Authentication.Register;
 
 namespace OrderManagement.Api.Controllers;
@@ -8,10 +9,12 @@ namespace OrderManagement.Api.Controllers;
 public sealed class AuthenticationController : ControllerBase
 {
     private readonly RegisterHandler _registerHandler;
+    private readonly LoginHandler _loginHandler;
 
-    public AuthenticationController(RegisterHandler registerHandler)
+    public AuthenticationController(RegisterHandler registerHandler, LoginHandler loginHandler)
     {
         _registerHandler = registerHandler;
+        _loginHandler = loginHandler;
     }
 
     [HttpPost("register")]
@@ -49,5 +52,39 @@ public sealed class AuthenticationController : ControllerBase
         return StatusCode(
             StatusCodes.Status201Created,
             result.Response);
+    }
+
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _loginHandler.HandleAsync(
+            request,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            var isAuthenticationFailure = result.Errors.Any(error =>
+                error.Code is "InvalidCredentials" or "AccountLocked");
+
+            if (isAuthenticationFailure)
+            {
+                return Unauthorized(new
+                {
+                    message = "Invalid email or password."
+                });
+            }
+
+            return BadRequest(new
+            {
+                errors = result.Errors
+            });
+        }
+
+        return Ok(result.Response);
     }
 }

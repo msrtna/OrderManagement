@@ -11,6 +11,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
+    protected ApplicationDbContext(DbContextOptions options)
+    : base(options)
+    {
+    }
+
 
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Product> Products => Set<Product>();
@@ -37,10 +42,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
 
+    //protected override void OnModelCreating(ModelBuilder modelBuilder)
+    //{
+    //    base.OnModelCreating(modelBuilder);
+
+    //    modelBuilder.ApplyConfigurationsFromAssembly(
+    //        typeof(ApplicationDbContext).Assembly);
+    //}
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        ApplyConfigurations(modelBuilder);
+    }
+
+    protected virtual void ApplyConfigurations(ModelBuilder modelBuilder)
+    {
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ApplicationDbContext).Assembly);
     }

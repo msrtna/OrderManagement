@@ -59,7 +59,8 @@ public sealed class IdentityService : IIdentityService
             UserName = email.Trim(),
             CreatedAt = DateTime.UtcNow,
             IsBlocked = false,
-            CanPurchase = true
+            CanPurchase = true,
+            LockoutEnabled = true
         };
 
         var createResult = await _userManager.CreateAsync(user, password);
@@ -100,6 +101,86 @@ public sealed class IdentityService : IIdentityService
         return new RegisterResult(
             true,
             user.Id,
+            Array.Empty<IdentityError>());
+    }
+
+    public async Task<LoginIdentityResult> AuthenticateAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var user = await _userManager.FindByEmailAsync(email.Trim());
+
+        if (user is null || user.IsBlocked)
+        {
+            return new LoginIdentityResult(
+                false,
+                null,
+                null,
+                null,
+                null,
+                Array.Empty<string>(),
+                new[]
+                {
+                new IdentityError(
+                    "InvalidCredentials",
+                    "Invalid email or password.")
+                });
+        }
+
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            return new LoginIdentityResult(
+                false,
+                null,
+                null,
+                null,
+                null,
+                Array.Empty<string>(),
+                new[]
+                {
+                new IdentityError(
+                    "AccountLocked",
+                    "Account is temporarily locked.")
+                });
+        }
+
+        var passwordIsValid = await _userManager.CheckPasswordAsync(
+            user,
+            password);
+
+        if (!passwordIsValid)
+        {
+            await _userManager.AccessFailedAsync(user);
+
+            return new LoginIdentityResult(
+                false,
+                null,
+                null,
+                null,
+                null,
+                Array.Empty<string>(),
+                new[]
+                {
+                new IdentityError(
+                    "InvalidCredentials",
+                    "Invalid email or password.")
+                });
+        }
+
+        await _userManager.ResetAccessFailedCountAsync(user);
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return new LoginIdentityResult(
+            true,
+            user.Id,
+            user.FirstName,
+            user.LastName,
+            user.Email,
+            roles.ToArray(),
             Array.Empty<IdentityError>());
     }
 }
