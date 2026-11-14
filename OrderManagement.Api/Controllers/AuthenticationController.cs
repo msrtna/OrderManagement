@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.Features.Authentication.Login;
 using OrderManagement.Application.Features.Authentication.Register;
 
@@ -86,5 +88,31 @@ public sealed class AuthenticationController : ControllerBase
         }
 
         return Ok(result.Response);
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public IActionResult GetCurrentUser()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = User.FindFirstValue(ClaimTypes.Email);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
+        var roles = User.FindAll(ClaimTypes.Role)
+            .Select(claim => claim.Value)
+            .ToArray();
+
+        return Ok(new
+        {
+            UserId = userId,
+            Email = email,
+            Roles = roles
+        });
     }
 }

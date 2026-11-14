@@ -1,4 +1,5 @@
-﻿namespace OrderManagement.Application.Abstractions.Identity;
+﻿
+namespace OrderManagement.Application.Abstractions.Identity;
 
 public sealed class JwtOptions
 {
