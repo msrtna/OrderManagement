@@ -77,4 +77,15 @@ public sealed class JwtTokenService : ITokenService
             refreshToken,
             expiresAt);
     }
+
+    public string HashRefreshToken(string refreshToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(refreshToken);
+
+        var tokenBytes = Encoding.UTF8.GetBytes(refreshToken);
+
+        var hashBytes = SHA256.HashData(tokenBytes);
+
+        return Convert.ToHexString(hashBytes);
+    }
 }

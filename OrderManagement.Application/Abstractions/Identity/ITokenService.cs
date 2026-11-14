@@ -8,6 +8,8 @@ public interface ITokenService
         IReadOnlyCollection<string> roles);
 
     RefreshTokenResult GenerateRefreshToken();
+
+    string HashRefreshToken(string refreshToken);
 }
 
 public sealed record AccessTokenResult(

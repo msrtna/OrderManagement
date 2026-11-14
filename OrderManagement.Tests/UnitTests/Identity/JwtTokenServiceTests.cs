@@ -135,4 +135,52 @@ public sealed class JwtTokenServiceTests
             beforeGeneration.AddDays(_jwtOptions.RefreshTokenExpirationDays),
             afterGeneration.AddDays(_jwtOptions.RefreshTokenExpirationDays));
     }
+
+    [Fact]
+    public void HashRefreshToken_ShouldReturn64CharacterHash()
+    {
+        // Arrange
+        var service = new JwtTokenService(
+            Options.Create(new JwtOptions()));
+
+        const string refreshToken = "sample-refresh-token";
+
+        // Act
+        var hash = service.HashRefreshToken(refreshToken);
+
+        // Assert
+        Assert.Equal(64, hash.Length);
+    }
+
+    [Fact]
+    public void HashRefreshToken_ShouldReturnSameHash_WhenInputIsSame()
+    {
+        // Arrange
+        var service = new JwtTokenService(
+            Options.Create(new JwtOptions()));
+
+        const string refreshToken = "sample-refresh-token";
+
+        // Act
+        var firstHash = service.HashRefreshToken(refreshToken);
+        var secondHash = service.HashRefreshToken(refreshToken);
+
+        // Assert
+        Assert.Equal(firstHash, secondHash);
+    }
+
+    [Fact]
+    public void HashRefreshToken_ShouldReturnDifferentHash_WhenInputIsDifferent()
+    {
+        // Arrange
+        var service = new JwtTokenService(
+            Options.Create(new JwtOptions()));
+
+        // Act
+        var firstHash = service.HashRefreshToken("refresh-token-1");
+        var secondHash = service.HashRefreshToken("refresh-token-2");
+
+        // Assert
+        Assert.NotEqual(firstHash, secondHash);
+    }
 }

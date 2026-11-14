@@ -41,14 +41,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<StockAdjustmentRequest> StockAdjustmentRequests => Set<StockAdjustmentRequest>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
-
-    //protected override void OnModelCreating(ModelBuilder modelBuilder)
-    //{
-    //    base.OnModelCreating(modelBuilder);
-
-    //    modelBuilder.ApplyConfigurationsFromAssembly(
-    //        typeof(ApplicationDbContext).Assembly);
-    //}
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
