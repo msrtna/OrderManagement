@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,9 +19,29 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection")));
-
         services.AddDataProtection();
-
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(options.Issuer),
+                "JWT Issuer is required.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(options.Audience),
+                "JWT Audience is required.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(options.SecretKey)
+                    && Encoding.UTF8.GetByteCount(options.SecretKey) >= 32,
+                "JWT SecretKey must contain at least 32 bytes.")
+            .Validate(
+                options => options.AccessTokenExpirationMinutes > 0,
+                "Access token expiration must be greater than zero.")
+            .Validate(
+                options => options.RefreshTokenExpirationDays > 0,
+                "Refresh token expiration must be greater than zero.")
+            .ValidateOnStart();
         services.AddIdentityCore<ApplicationUser>(options =>
             {
                 options.User.RequireUniqueEmail = true;
@@ -38,8 +59,8 @@ public static class DependencyInjection
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
-
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ITokenService, JwtTokenService>();
 
         return services;
     }
