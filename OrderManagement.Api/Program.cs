@@ -106,6 +106,14 @@ public partial class Program
         // Seed Identity roles
         await IdentitySeeder.SeedRolesAsync(app.Services);
 
+        // Seed Development Admin
+        if (app.Environment.IsDevelopment())
+        {
+            await DevelopmentAdminSeeder.SeedAsync(
+                app.Services,
+                app.Configuration);
+        }
+
         // Swagger
         if (app.Environment.IsDevelopment())
         {
