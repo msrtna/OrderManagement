@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderManagement.Application.Abstractions.Identity;
 using OrderManagement.Application.Features.Authentication.Login;
+using OrderManagement.Application.Features.Authentication.RefreshToken;
 using OrderManagement.Application.Features.Authentication.Register;
 
 namespace OrderManagement.Application;
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
         services.AddScoped<RegisterHandler>();
         services.AddScoped<LoginHandler>();
+        services.AddScoped<RefreshTokenHandler>();
 
         return services;
     }

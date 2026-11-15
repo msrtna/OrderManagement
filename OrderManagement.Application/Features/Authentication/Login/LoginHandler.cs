@@ -67,6 +67,15 @@ public sealed class LoginHandler
 
         var refreshToken = _tokenService.GenerateRefreshToken();
 
+        var refreshTokenHash = _tokenService.HashRefreshToken(
+            refreshToken.Token);
+
+        await _identityService.StoreRefreshTokenAsync(
+            identityResult.UserId!,
+            refreshTokenHash,
+            refreshToken.ExpiresAt,
+            cancellationToken);
+
         var response = new LoginResponse(
             accessToken.Token,
             refreshToken.Token,

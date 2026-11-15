@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.Features.Authentication.Login;
+using OrderManagement.Application.Features.Authentication.RefreshToken;
 using OrderManagement.Application.Features.Authentication.Register;
 
 namespace OrderManagement.Api.Controllers;
@@ -12,11 +13,13 @@ public sealed class AuthenticationController : ControllerBase
 {
     private readonly RegisterHandler _registerHandler;
     private readonly LoginHandler _loginHandler;
+    private readonly RefreshTokenHandler _refreshTokenHandler;
 
-    public AuthenticationController(RegisterHandler registerHandler, LoginHandler loginHandler)
+    public AuthenticationController(RegisterHandler registerHandler, LoginHandler loginHandler, RefreshTokenHandler refreshTokenHandler)
     {
         _registerHandler = registerHandler;
         _loginHandler = loginHandler;
+        _refreshTokenHandler = refreshTokenHandler;
     }
 
     [HttpPost("register")]
@@ -114,5 +117,41 @@ public sealed class AuthenticationController : ControllerBase
             Email = email,
             Roles = roles
         });
+    }
+
+    [HttpPost("refresh")]
+    [ProducesResponseType(
+    typeof(RefreshTokenResponse),
+    StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh(
+    [FromBody] RefreshTokenRequest request,
+    CancellationToken cancellationToken)
+    {
+        var result = await _refreshTokenHandler.HandleAsync(
+            request,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            var reuseDetected = result.Errors.Any(error =>
+                error.Code == "RefreshTokenReuseDetected");
+
+            if (reuseDetected)
+            {
+                return Unauthorized(new
+                {
+                    message = "Refresh token reuse detected. Please login again."
+                });
+            }
+
+            return Unauthorized(new
+            {
+                errors = result.Errors
+            });
+        }
+
+        return Ok(result.Response);
     }
 }

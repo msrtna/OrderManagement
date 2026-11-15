@@ -9,6 +9,17 @@ public class LoginHandlerTests
     private readonly Mock<IIdentityService> _identityServiceMock = new();
     private readonly Mock<ITokenService> _tokenServiceMock = new();
 
+    private const string UserId = "user-123";
+    private const string Email = "mohammad@example.com";
+    private const string RawRefreshToken = "refresh-token";
+    private const string HashedRefreshToken = "hashed-refresh-token";
+
+    private readonly DateTime _accessTokenExpiresAt =
+        new(2026, 11, 15, 3, 0, 0, DateTimeKind.Utc);
+
+    private readonly DateTime _refreshTokenExpiresAt =
+        new(2026, 11, 22, 3, 0, 0, DateTimeKind.Utc);
+
     private LoginHandler CreateHandler()
     {
         var validator = new LoginRequestValidator();
@@ -19,10 +30,13 @@ public class LoginHandlerTests
             _tokenServiceMock.Object);
     }
 
-    [Fact]
-    public async Task HandleAsync_ShouldReturnTokens_WhenCredentialsAreValid()
+    private void SetupSuccessfulAuthentication(
+        string userId = UserId,
+        string email = Email,
+        string firstName = "Mohammad",
+        string lastName = "Moradi",
+        IReadOnlyCollection<string>? roles = null)
     {
-        // Arrange
         _identityServiceMock
             .Setup(x => x.AuthenticateAsync(
                 It.IsAny<string>(),
@@ -30,33 +44,55 @@ public class LoginHandlerTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new LoginIdentityResult(
                 true,
-                "user-123",
-                "Mohammad",
-                "Moradi",
-                "mohammad@example.com",
-                new[] { "Customer" },
+                userId,
+                firstName,
+                lastName,
+                email,
+                (IReadOnlyList<string>)(roles ?? new[] { "Customer" }),
                 Array.Empty<IdentityError>()));
+    }
 
+    private void SetupTokenGeneration()
+    {
         _tokenServiceMock
             .Setup(x => x.GenerateAccessToken(
-                "user-123",
-                "mohammad@example.com",
-                It.Is<IReadOnlyCollection<string>>(
-                    roles => roles.Contains("Customer"))))
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<IReadOnlyCollection<string>>()))
             .Returns(new AccessTokenResult(
                 "access-token",
-                DateTime.UtcNow.AddMinutes(15)));
+                _accessTokenExpiresAt));
 
         _tokenServiceMock
             .Setup(x => x.GenerateRefreshToken())
             .Returns(new RefreshTokenResult(
-                "refresh-token",
-                DateTime.UtcNow.AddDays(7)));
+                RawRefreshToken,
+                _refreshTokenExpiresAt));
+
+        _tokenServiceMock
+            .Setup(x => x.HashRefreshToken(RawRefreshToken))
+            .Returns(HashedRefreshToken);
+
+        _identityServiceMock
+            .Setup(x => x.StoreRefreshTokenAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldReturnTokens_WhenCredentialsAreValid()
+    {
+        // Arrange
+        SetupSuccessfulAuthentication();
+        SetupTokenGeneration();
 
         var handler = CreateHandler();
 
         var request = new LoginRequest(
-            "mohammad@example.com",
+            Email,
             "Password123");
 
         // Act
@@ -67,31 +103,76 @@ public class LoginHandlerTests
         Assert.NotNull(result.Response);
 
         Assert.Equal("access-token", result.Response.AccessToken);
-        Assert.Equal("refresh-token", result.Response.RefreshToken);
+        Assert.Equal(RawRefreshToken, result.Response.RefreshToken);
 
-        Assert.Equal("user-123", result.Response.UserId);
+        Assert.Equal(_accessTokenExpiresAt, result.Response.AccessTokenExpiresAt);
+        Assert.Equal(_refreshTokenExpiresAt, result.Response.RefreshTokenExpiresAt);
+
+        Assert.Equal(UserId, result.Response.UserId);
         Assert.Equal("Mohammad", result.Response.FirstName);
         Assert.Equal("Moradi", result.Response.LastName);
-        Assert.Equal("mohammad@example.com", result.Response.Email);
+        Assert.Equal(Email, result.Response.Email);
 
         Assert.Empty(result.Errors);
 
         _identityServiceMock.Verify(
             x => x.AuthenticateAsync(
-                "mohammad@example.com",
+                Email,
                 "Password123",
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
         _tokenServiceMock.Verify(
             x => x.GenerateAccessToken(
-                "user-123",
-                "mohammad@example.com",
+                UserId,
+                Email,
                 It.IsAny<IReadOnlyCollection<string>>()),
             Times.Once);
 
         _tokenServiceMock.Verify(
             x => x.GenerateRefreshToken(),
+            Times.Once);
+
+        _identityServiceMock.Verify(
+            x => x.StoreRefreshTokenAsync(
+                UserId,
+                HashedRefreshToken,
+                _refreshTokenExpiresAt,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ShouldStoreHashedRefreshToken_WhenLoginIsSuccessful()
+    {
+        // Arrange
+        SetupSuccessfulAuthentication();
+        SetupTokenGeneration();
+
+        var handler = CreateHandler();
+
+        var request = new LoginRequest(
+            Email,
+            "Password123");
+
+        // Act
+        var result = await handler.HandleAsync(request);
+
+        // Assert
+        Assert.True(result.Succeeded);
+
+        _tokenServiceMock.Verify(
+            x => x.HashRefreshToken(RawRefreshToken),
+            Times.Once);
+
+        _identityServiceMock.Verify(
+            x => x.StoreRefreshTokenAsync(
+                UserId,
+                It.Is<string>(hash =>
+                    hash == HashedRefreshToken &&
+                    hash != RawRefreshToken),
+                _refreshTokenExpiresAt,
+                It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -122,6 +203,21 @@ public class LoginHandlerTests
 
         Assert.All(result.Errors, error =>
             Assert.False(string.IsNullOrWhiteSpace(error.Description)));
+
+        _identityServiceMock.Verify(
+            x => x.AuthenticateAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        _identityServiceMock.Verify(
+            x => x.StoreRefreshTokenAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
@@ -174,7 +270,7 @@ public class LoginHandlerTests
         var handler = CreateHandler();
 
         var request = new LoginRequest(
-            "mohammad@example.com",
+            Email,
             "WrongPassword123");
 
         // Act
@@ -196,6 +292,14 @@ public class LoginHandlerTests
 
         _tokenServiceMock.Verify(
             x => x.GenerateRefreshToken(),
+            Times.Never);
+
+        _identityServiceMock.Verify(
+            x => x.StoreRefreshTokenAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -231,7 +335,7 @@ public class LoginHandlerTests
         var handler = CreateHandler();
 
         var request = new LoginRequest(
-            "mohammad@example.com",
+            Email,
             "Password123");
 
         // Act
@@ -250,6 +354,14 @@ public class LoginHandlerTests
         Assert.Contains(result.Errors, error =>
             error.Code == "AccountLocked" &&
             error.Description == "Account is temporarily locked.");
+
+        _identityServiceMock.Verify(
+            x => x.StoreRefreshTokenAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
@@ -258,39 +370,13 @@ public class LoginHandlerTests
         // Arrange
         var roles = new[] { "Customer", "Admin" };
 
-        _identityServiceMock
-            .Setup(x => x.AuthenticateAsync(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new LoginIdentityResult(
-                true,
-                "user-123",
-                "Mohammad",
-                "Moradi",
-                "mohammad@example.com",
-                roles,
-                Array.Empty<IdentityError>()));
-
-        _tokenServiceMock
-            .Setup(x => x.GenerateAccessToken(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<IReadOnlyCollection<string>>()))
-            .Returns(new AccessTokenResult(
-                "access-token",
-                DateTime.UtcNow.AddMinutes(15)));
-
-        _tokenServiceMock
-            .Setup(x => x.GenerateRefreshToken())
-            .Returns(new RefreshTokenResult(
-                "refresh-token",
-                DateTime.UtcNow.AddDays(7)));
+        SetupSuccessfulAuthentication(roles: roles);
+        SetupTokenGeneration();
 
         var handler = CreateHandler();
 
         var request = new LoginRequest(
-            "mohammad@example.com",
+            Email,
             "Password123");
 
         // Act
@@ -301,11 +387,10 @@ public class LoginHandlerTests
 
         _tokenServiceMock.Verify(
             x => x.GenerateAccessToken(
-                "user-123",
-                "mohammad@example.com",
+                UserId,
+                Email,
                 It.Is<IReadOnlyCollection<string>>(
-                    actualRoles =>
-                        actualRoles.SequenceEqual(roles))),
+                    actualRoles => actualRoles.SequenceEqual(roles))),
             Times.Once);
     }
 
@@ -313,34 +398,13 @@ public class LoginHandlerTests
     public async Task HandleAsync_ShouldUseIdentityUserInformation_WhenAuthenticationSucceeds()
     {
         // Arrange
-        _identityServiceMock
-            .Setup(x => x.AuthenticateAsync(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new LoginIdentityResult(
-                true,
-                "user-456",
-                "Ali",
-                "Ahmadi",
-                "ali@example.com",
-                new[] { "Customer" },
-                Array.Empty<IdentityError>()));
+        SetupSuccessfulAuthentication(
+            userId: "user-456",
+            email: "ali@example.com",
+            firstName: "Ali",
+            lastName: "Ahmadi");
 
-        _tokenServiceMock
-            .Setup(x => x.GenerateAccessToken(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<IReadOnlyCollection<string>>()))
-            .Returns(new AccessTokenResult(
-                "access-token",
-                DateTime.UtcNow.AddMinutes(15)));
-
-        _tokenServiceMock
-            .Setup(x => x.GenerateRefreshToken())
-            .Returns(new RefreshTokenResult(
-                "refresh-token",
-                DateTime.UtcNow.AddDays(7)));
+        SetupTokenGeneration();
 
         var handler = CreateHandler();
 
@@ -359,5 +423,13 @@ public class LoginHandlerTests
         Assert.Equal("Ali", result.Response.FirstName);
         Assert.Equal("Ahmadi", result.Response.LastName);
         Assert.Equal("ali@example.com", result.Response.Email);
+
+        _identityServiceMock.Verify(
+            x => x.StoreRefreshTokenAsync(
+                "user-456",
+                HashedRefreshToken,
+                _refreshTokenExpiresAt,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }
