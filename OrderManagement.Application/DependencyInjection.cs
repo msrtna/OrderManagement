@@ -5,6 +5,11 @@ using OrderManagement.Application.Abstractions.Identity;
 using OrderManagement.Application.Features.Authentication.Login;
 using OrderManagement.Application.Features.Authentication.RefreshToken;
 using OrderManagement.Application.Features.Authentication.Register;
+using OrderManagement.Application.Features.Products.CreateProduct;
+using OrderManagement.Application.Features.Products.DeactivateProduct;
+using OrderManagement.Application.Features.Products.GetProductById;
+using OrderManagement.Application.Features.Products.GetProducts;
+using OrderManagement.Application.Features.Products.UpdateProduct;
 
 namespace OrderManagement.Application;
 
@@ -35,9 +40,16 @@ public static class DependencyInjection
                 "Refresh token expiration must be greater than zero.");
 
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+
         services.AddScoped<RegisterHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<RefreshTokenHandler>();
+
+        services.AddScoped<CreateProductHandler>();
+        services.AddScoped<GetProductByIdHandler>();
+        services.AddScoped<GetProductsHandler>();
+        services.AddScoped<UpdateProductHandler>();
+        services.AddScoped<DeactivateProductHandler>();
 
         return services;
     }
