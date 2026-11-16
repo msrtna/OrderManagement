@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿
+using FluentValidation;
 
 namespace OrderManagement.Application.Features.Products.GetProducts;
 
@@ -43,8 +44,14 @@ public sealed class GetProductsValidator
 
         RuleFor(x => x.SortBy)
             .Must(sortBy =>
-                sortBy.Equals("Name", StringComparison.OrdinalIgnoreCase) ||
-                sortBy.Equals("Price", StringComparison.OrdinalIgnoreCase))
+                string.Equals(
+                    sortBy,
+                    "Name",
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(
+                    sortBy,
+                    "Price",
+                    StringComparison.OrdinalIgnoreCase))
             .WithMessage("Sort by must be either Name or Price.");
     }
 }
