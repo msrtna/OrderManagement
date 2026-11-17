@@ -27,8 +27,6 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .IsRequired();
 
 
-
-
         builder.HasIndex(c => c.Name)
             .IsUnique();
     }

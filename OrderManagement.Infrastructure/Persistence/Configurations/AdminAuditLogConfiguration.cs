@@ -29,24 +29,21 @@ public class AdminAuditLogConfiguration
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(log => log.OldValues)
-            .HasColumnType("nvarchar(max)");
+        builder.Property(log => log.OldValues);
 
-        builder.Property(log => log.NewValues)
-            .HasColumnType("nvarchar(max)");
+        builder.Property(log => log.NewValues);
 
         builder.Property(log => log.CreatedAt)
             .IsRequired();
 
-
-
-
         builder.HasIndex(log => log.AdminUserId);
+
         builder.HasIndex(log => new
         {
             log.EntityType,
             log.EntityId
         });
+
         builder.HasIndex(log => log.CreatedAt);
     }
 }

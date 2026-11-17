@@ -27,8 +27,7 @@ public class OutboxMessageConfiguration
             .HasMaxLength(200);
 
         builder.Property(m => m.Content)
-            .IsRequired()
-            .HasColumnType("nvarchar(max)");
+            .IsRequired();
 
         builder.Property(m => m.OccurredAt)
             .IsRequired();
@@ -57,15 +56,13 @@ public class OutboxMessageConfiguration
         builder.Property(m => m.CreatedAt)
             .IsRequired();
 
-
-
-
         builder.HasIndex(m => new
         {
             m.IsProcessed,
             m.IsFailed,
             m.NextAttemptAt
         });
+
         builder.HasIndex(m => m.LockedUntil);
     }
 }
