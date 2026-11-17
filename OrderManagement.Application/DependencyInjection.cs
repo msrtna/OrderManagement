@@ -5,6 +5,11 @@ using OrderManagement.Application.Abstractions.Identity;
 using OrderManagement.Application.Features.Authentication.Login;
 using OrderManagement.Application.Features.Authentication.RefreshToken;
 using OrderManagement.Application.Features.Authentication.Register;
+using OrderManagement.Application.Features.Categories.CreateCategory;
+using OrderManagement.Application.Features.Categories.DeactivateCategory;
+using OrderManagement.Application.Features.Categories.GetCategories;
+using OrderManagement.Application.Features.Categories.GetCategoryById;
+using OrderManagement.Application.Features.Categories.UpdateCategory;
 using OrderManagement.Application.Features.Products.CreateProduct;
 using OrderManagement.Application.Features.Products.DeactivateProduct;
 using OrderManagement.Application.Features.Products.GetProductById;
@@ -50,6 +55,12 @@ public static class DependencyInjection
         services.AddScoped<GetProductsHandler>();
         services.AddScoped<UpdateProductHandler>();
         services.AddScoped<DeactivateProductHandler>();
+
+        services.AddScoped<CreateCategoryHandler>();
+        services.AddScoped<GetCategoryByIdHandler>();
+        services.AddScoped<GetCategoriesHandler>();
+        services.AddScoped<UpdateCategoryHandler>();
+        services.AddScoped<DeactivateCategoryHandler>();
 
         return services;
     }
