@@ -16,6 +16,8 @@ public interface IApplicationDbContext
 
     DbSet<StoreSettings> StoreSettings { get; }
 
+    DbSet<UserAddress> UserAddresses { get; }
+
     Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default);
 }
