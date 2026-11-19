@@ -15,6 +15,11 @@ using OrderManagement.Application.Features.Products.DeactivateProduct;
 using OrderManagement.Application.Features.Products.GetProductById;
 using OrderManagement.Application.Features.Products.GetProducts;
 using OrderManagement.Application.Features.Products.UpdateProduct;
+using OrderManagement.Application.Features.ShoppingCarts.AddToCart;
+using OrderManagement.Application.Features.ShoppingCarts.ClearCart;
+using OrderManagement.Application.Features.ShoppingCarts.GetCart;
+using OrderManagement.Application.Features.ShoppingCarts.RemoveCartItem;
+using OrderManagement.Application.Features.ShoppingCarts.UpdateCartItemQuantity;
 
 namespace OrderManagement.Application;
 
@@ -61,6 +66,12 @@ public static class DependencyInjection
         services.AddScoped<GetCategoriesHandler>();
         services.AddScoped<UpdateCategoryHandler>();
         services.AddScoped<DeactivateCategoryHandler>();
+
+        services.AddScoped<AddToCartHandler>();
+        services.AddScoped<GetCartHandler>();
+        services.AddScoped<UpdateCartItemQuantityHandler>();
+        services.AddScoped<RemoveCartItemHandler>();
+        services.AddScoped<ClearCartHandler>();
 
         return services;
     }
