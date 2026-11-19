@@ -10,6 +10,8 @@ using OrderManagement.Application.Features.Categories.DeactivateCategory;
 using OrderManagement.Application.Features.Categories.GetCategories;
 using OrderManagement.Application.Features.Categories.GetCategoryById;
 using OrderManagement.Application.Features.Categories.UpdateCategory;
+using OrderManagement.Application.Features.Checkout.CreateOrder;
+using OrderManagement.Application.Features.Checkout.PayOrder;
 using OrderManagement.Application.Features.Products.CreateProduct;
 using OrderManagement.Application.Features.Products.DeactivateProduct;
 using OrderManagement.Application.Features.Products.GetProductById;
@@ -85,6 +87,9 @@ public static class DependencyInjection
         services.AddScoped<UpdateAddressHandler>();
         services.AddScoped<SetDefaultAddressHandler>();
         services.AddScoped<DeleteAddressHandler>();
+
+        services.AddScoped<CreateOrderHandler>();
+        services.AddScoped<PayOrderHandler>();
 
         return services;
     }
