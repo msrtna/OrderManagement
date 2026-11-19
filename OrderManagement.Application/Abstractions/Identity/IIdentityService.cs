@@ -1,5 +1,4 @@
-﻿
-namespace OrderManagement.Application.Abstractions.Identity;
+﻿namespace OrderManagement.Application.Abstractions.Identity;
 
 public interface IIdentityService
 {

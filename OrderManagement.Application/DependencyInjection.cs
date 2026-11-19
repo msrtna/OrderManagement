@@ -15,6 +15,17 @@ using OrderManagement.Application.Features.Products.DeactivateProduct;
 using OrderManagement.Application.Features.Products.GetProductById;
 using OrderManagement.Application.Features.Products.GetProducts;
 using OrderManagement.Application.Features.Products.UpdateProduct;
+using OrderManagement.Application.Features.ShoppingCarts.AddToCart;
+using OrderManagement.Application.Features.ShoppingCarts.ClearCart;
+using OrderManagement.Application.Features.ShoppingCarts.GetCart;
+using OrderManagement.Application.Features.ShoppingCarts.RemoveCartItem;
+using OrderManagement.Application.Features.ShoppingCarts.UpdateCartItemQuantity;
+using OrderManagement.Application.Features.UserAddresses.CreateAddress;
+using OrderManagement.Application.Features.UserAddresses.DeleteAddress;
+using OrderManagement.Application.Features.UserAddresses.GetAddressById;
+using OrderManagement.Application.Features.UserAddresses.GetAddresses;
+using OrderManagement.Application.Features.UserAddresses.SetDefaultAddress;
+using OrderManagement.Application.Features.UserAddresses.UpdateAddress;
 
 namespace OrderManagement.Application;
 
@@ -61,6 +72,19 @@ public static class DependencyInjection
         services.AddScoped<GetCategoriesHandler>();
         services.AddScoped<UpdateCategoryHandler>();
         services.AddScoped<DeactivateCategoryHandler>();
+
+        services.AddScoped<AddToCartHandler>();
+        services.AddScoped<GetCartHandler>();
+        services.AddScoped<UpdateCartItemQuantityHandler>();
+        services.AddScoped<RemoveCartItemHandler>();
+        services.AddScoped<ClearCartHandler>();
+
+        services.AddScoped<CreateAddressHandler>();
+        services.AddScoped<GetAddressesHandler>();
+        services.AddScoped<GetAddressByIdHandler>();
+        services.AddScoped<UpdateAddressHandler>();
+        services.AddScoped<SetDefaultAddressHandler>();
+        services.AddScoped<DeleteAddressHandler>();
 
         return services;
     }
