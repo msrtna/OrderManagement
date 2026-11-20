@@ -235,7 +235,7 @@ public sealed class PayOrderHandler
             order.Status = OrderStatus.Paid;
             order.UpdatedAt = now;
 
-            var statusHistory = new OrderStatusHistory
+            var orderStatusHistory = new OrderStatusHistory
             {
                 OrderId = order.Id,
                 Status = OrderStatus.Paid,
@@ -245,7 +245,31 @@ public sealed class PayOrderHandler
             };
 
             await _context.OrderStatusHistories.AddAsync(
-                statusHistory,
+                orderStatusHistory,
+                cancellationToken);
+
+            var shipment = new Shipment
+            {
+                OrderId = order.Id,
+                Status = ShipmentStatus.Preparing,
+                CreatedAt = now
+            };
+
+            await _context.Shipments.AddAsync(
+                shipment,
+                cancellationToken);
+
+            var shipmentStatusHistory = new ShipmentStatusHistory
+            {
+                Shipment = shipment,
+                Status = ShipmentStatus.Preparing,
+                ChangedByUserId = userId,
+                Description = "Shipment created automatically after successful payment.",
+                CreatedAt = now
+            };
+
+            await _context.ShipmentStatusHistories.AddAsync(
+                shipmentStatusHistory,
                 cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
