@@ -1,5 +1,7 @@
+
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -90,7 +92,7 @@ public partial class Program
 
         var app = builder.Build();
 
-        // Create database only in Testing environment.
+        // Database initialization
         if (app.Environment.IsEnvironment("Testing"))
         {
             using var scope = app.Services.CreateScope();
@@ -99,6 +101,15 @@ public partial class Program
                 .GetRequiredService<ApplicationDbContext>();
 
             await dbContext.Database.EnsureCreatedAsync();
+        }
+        else if (app.Environment.IsDevelopment())
+        {
+            using var scope = app.Services.CreateScope();
+
+            var dbContext = scope.ServiceProvider
+                .GetRequiredService<ApplicationDbContext>();
+
+            await dbContext.Database.MigrateAsync();
         }
 
         // Seed Identity roles

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderManagement.Application.Abstractions.Identity;
+using OrderManagement.Application.Abstractions.Persistence;
 using OrderManagement.Domain.Entities;
 using OrderManagement.Infrastructure.Identity;
 using OrderManagement.Infrastructure.Persistence;
@@ -20,6 +21,9 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddScoped<IApplicationDbContext>(
+            provider => provider.GetRequiredService<ApplicationDbContext>());
 
         services.AddHttpContextAccessor();
 

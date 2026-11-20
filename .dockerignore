@@ -1,0 +1,17 @@
+
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/TestResults/
+.git/
+.gitignore
+.vs/
+.vscode/
+.idea/
+Dockerfile*
+docker-compose*
+.env
+.env.*
+!.env.example
