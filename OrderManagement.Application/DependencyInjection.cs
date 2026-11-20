@@ -12,11 +12,17 @@ using OrderManagement.Application.Features.Categories.GetCategoryById;
 using OrderManagement.Application.Features.Categories.UpdateCategory;
 using OrderManagement.Application.Features.Checkout.CreateOrder;
 using OrderManagement.Application.Features.Checkout.PayOrder;
+using OrderManagement.Application.Features.Orders.GetMyOrders;
+using OrderManagement.Application.Features.Orders.GetOrderById;
+using OrderManagement.Application.Features.Orders.GetOrderStatusHistory;
+using OrderManagement.Application.Features.Orders.GetShipmentByOrderId;
 using OrderManagement.Application.Features.Products.CreateProduct;
 using OrderManagement.Application.Features.Products.DeactivateProduct;
 using OrderManagement.Application.Features.Products.GetProductById;
 using OrderManagement.Application.Features.Products.GetProducts;
 using OrderManagement.Application.Features.Products.UpdateProduct;
+using OrderManagement.Application.Features.Shipments.GetShipmentStatusHistory;
+using OrderManagement.Application.Features.Shipments.UpdateShipmentStatus;
 using OrderManagement.Application.Features.ShoppingCarts.AddToCart;
 using OrderManagement.Application.Features.ShoppingCarts.ClearCart;
 using OrderManagement.Application.Features.ShoppingCarts.GetCart;
@@ -90,6 +96,12 @@ public static class DependencyInjection
 
         services.AddScoped<CreateOrderHandler>();
         services.AddScoped<PayOrderHandler>();
+        services.AddScoped<GetMyOrdersHandler>();
+        services.AddScoped<GetOrderByIdHandler>();
+        services.AddScoped<GetOrderStatusHistoryHandler>();
+        services.AddScoped<GetShipmentByOrderIdHandler>();
+        services.AddScoped<UpdateShipmentStatusHandler>();
+        services.AddScoped<GetShipmentStatusHistoryHandler>();
 
         return services;
     }
