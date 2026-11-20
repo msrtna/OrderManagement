@@ -109,6 +109,38 @@ public sealed class PayOrderHandlerTests : IAsyncLifetime
         Assert.Equal(
             "Payment completed successfully.",
             history.Description);
+
+        // Assert shipment
+        var shipment = await _context.Shipments
+            .AsNoTracking()
+            .Include(shipment => shipment.StatusHistories)
+            .SingleOrDefaultAsync(
+                shipment => shipment.OrderId == order.Id);
+
+        Assert.NotNull(shipment);
+
+        Assert.Equal(
+            ShipmentStatus.Preparing,
+            shipment.Status);
+
+        Assert.Null(shipment.ShippedAt);
+        Assert.Null(shipment.DeliveredAt);
+
+        Assert.Single(shipment.StatusHistories);
+
+        var shipmentHistory = shipment.StatusHistories.Single();
+
+        Assert.Equal(
+            ShipmentStatus.Preparing,
+            shipmentHistory.Status);
+
+        Assert.Equal(
+            "user-1",
+            shipmentHistory.ChangedByUserId);
+
+        Assert.Equal(
+            "Shipment created automatically after successful payment.",
+            shipmentHistory.Description);
     }
 
     [Fact]
@@ -211,6 +243,13 @@ public sealed class PayOrderHandlerTests : IAsyncLifetime
             "InsufficientStockOrInactiveProduct");
 
         await AssertNoPaymentChangesAsync(order.Id, product.Id, 10);
+
+        Assert.Empty(await _context.Shipments
+    .Where(shipment => shipment.OrderId == order.Id)
+    .ToListAsync());
+
+        Assert.Empty(await _context.ShipmentStatusHistories
+            .ToListAsync());
     }
 
     [Fact]
@@ -231,6 +270,13 @@ public sealed class PayOrderHandlerTests : IAsyncLifetime
         await AssertNoPaymentChangesAsync(order.Id, product.Id, 1);
 
         Assert.Single(await _context.CartItems.ToListAsync());
+
+        Assert.Empty(await _context.Shipments
+    .Where(shipment => shipment.OrderId == order.Id)
+    .ToListAsync());
+
+        Assert.Empty(await _context.ShipmentStatusHistories
+            .ToListAsync());
     }
 
     [Fact]

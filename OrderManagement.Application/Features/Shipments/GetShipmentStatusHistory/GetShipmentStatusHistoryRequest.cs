@@ -1,0 +1,3 @@
+﻿namespace OrderManagement.Application.Features.Shipments.GetShipmentStatusHistory;
+
+public sealed record GetShipmentStatusHistoryRequest(long ShipmentId);
